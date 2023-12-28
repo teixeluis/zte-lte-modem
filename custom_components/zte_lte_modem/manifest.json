@@ -1,0 +1,9 @@
+{
+    "domain": "LTE Modem",
+    "name": "ZTE Outdoor Modem",
+    "version": "0.1.0",
+    "documentation": "https://github.com/teixeluis/zte-lte-modem/blob/main/README.md",
+    "integration_type": "device",
+    "iot_class": "local_polling",
+    "requirements": ["smsutil==1.1.3", "jsonpath-ng==1.6.0"]
+}

@@ -8,6 +8,12 @@ This integration exposes some of the features of this outdoor LTE modem to Home 
  * SMS text entity - allows SMS to be sent via the modem;
  * Modem status sensor - provides realtime information regarding the modem operation;
 
+## Packages
+
+```
+$ pip install jsonpath-ng smsutil
+```
+
 
 ## TODO
 

@@ -1,10 +1,8 @@
 import zte_modem_common
 
-import re
 import smsutil
 import json
 
-from jsonpath_ng import jsonpath, parse
 from getpass import getpass
 
 def doGetModemStatus():
@@ -17,26 +15,25 @@ def doGetLteStatus():
     resp = zte_modem_common.getLteStatus()
     print('doGetLteStatus: ', json.dumps(resp.json(), indent=4))
 
-def getLastSms():
-    zte_modem_common.login()
-
-    resp = zte_modem_common.getSmsList()
-
-    print('getSmsList: sms list', json.dumps(resp.json(), indent=4))
-
-    contentQuery = parse('$.messages[*].content')
-
-    smsContent = contentQuery.find(resp.json())[0].value
-    smsText = smsutil.decode(bytes.fromhex(smsContent), encoding='utf_16_be')
-    
-    #print('getSmsList: first SMS raw: ', smsContent)
-    #print('getSmsList: first SMS content: ', smsText)
-    
-    return smsText
-
-
 zte_modem_common.PASSWORD = getpass()
 
-smsText = getLastSms()
 
-print('zte_modem_util: last SMS content: ', smsText)
+def doGetAllSms():
+    smsList = zte_modem_common.getSms(False)
+
+    for sms in smsList:
+        print('zte_modem_util: doGetAllSms: SMS fields: ', json.dumps(sms, indent=4))
+        smsText = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
+        print('zte_modem_util: doGetAllSms: SMS content: ', smsText)
+
+def doFetchSms():
+    sms = zte_modem_common.fetchSms()
+
+    if sms != None:
+        print('zte_modem_util: doFetchSms: SMS fields: ', json.dumps(sms, indent=4))
+        smsText = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
+        print('zte_modem_util: doFetchSms: SMS content: ', smsText)
+    else:
+        print('zte_modem_util: no more SMS to read!')
+
+doFetchSms()

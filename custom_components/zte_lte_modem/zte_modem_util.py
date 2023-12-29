@@ -1,4 +1,4 @@
-import zte_modem_common
+from zte_modem_common import ZteModemConnection
 
 import smsutil
 import json
@@ -46,6 +46,6 @@ PORT = '8254'
 
 #doFetchSms()
 
-connection = zte_modem_common.ZteModemConnection(PROTOCOL, HOST, PORT, USERNAME, PASSWORD)
+connection = ZteModemConnection(PROTOCOL, HOST, PORT, USERNAME, PASSWORD)
 
 doGetAllSms(connection)

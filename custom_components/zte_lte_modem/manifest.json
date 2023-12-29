@@ -1,5 +1,5 @@
 {
-    "domain": "LTE Modem",
+    "domain": "zte_lte_modem",
     "name": "ZTE Outdoor Modem",
     "version": "0.1.0",
     "documentation": "https://github.com/teixeluis/zte-lte-modem/blob/main/README.md",

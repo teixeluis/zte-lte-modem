@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import smsutil
 
-import zte_modem_common
+from .zte_modem_common import ZteModemConnection, ZteModemException
 
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
@@ -46,7 +46,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 _LOGGER = logging.getLogger(__name__)
 
-SCAN_INTERVAL = timedelta(minutes=10)
+SCAN_INTERVAL = timedelta(seconds=15)
 
 # Validation of the user's configuration
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
@@ -76,7 +76,7 @@ def setup_platform(
 
 
 class SmsSensor(SensorEntity):
-    _attr_name = "ZTE Modem SMS sensor"
+    _attr_name = "ZTE Modem SMS Sensor"
 
     def __init__(self, sensor_name, protocol, host, port, username, password):
         super().__init__()
@@ -84,7 +84,7 @@ class SmsSensor(SensorEntity):
         self._name = sensor_name
         self._state = None
         self._available = True
-        self.connection = zte_modem_common.ZteModemConnection(protocol, host, port, username, password)
+        self.connection = ZteModemConnection(protocol, host, port, username, password)
 
     @property
     def name(self) -> str:
@@ -122,6 +122,6 @@ class SmsSensor(SensorEntity):
 
             self._state = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
             self._available = True
-        except (zte_modem_common.ZteModemException):
+        except (ZteModemException):
             self._available = False
             _LOGGER.exception("Error retrieving data from ZTE modem.")

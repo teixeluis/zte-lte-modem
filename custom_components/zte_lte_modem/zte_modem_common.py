@@ -5,7 +5,6 @@ import logging
 import sys
 import urllib.parse
 
-from string import Template
 from jsonpath_ng.ext import parse
 
 ZTE_API_BASE = '/goform/'
@@ -89,8 +88,8 @@ class ZteModemConnection:
         for msgId in msgIds:
             msgIdsStr = msgIdsStr + msgId + ";"
 
-        headers = { "Origin": self.url, "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": COOKIE }
-        params = { "isTest": "false", "goformId" : "SET_MSG_READ", "msg_id" : msgIdsStr, "tag": "0", "AD" : AD.lower() }
+        headers = { "Origin": self.url, "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
+        params = { "isTest": "false", "goformId" : "SET_MSG_READ", "msg_id" : msgIdsStr, "tag": "0", "AD" : self.ad.lower() }
 
         return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
 

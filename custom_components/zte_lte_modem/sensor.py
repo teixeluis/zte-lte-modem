@@ -8,18 +8,20 @@ import zte_modem_common
 
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
+
+from datetime import timedelta
 from typing import Any, Dict, Optional
 
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA,
-    SensorDeviceClass,
     SensorEntity,
-    SensorStateClass,
 )
 
 from homeassistant.const import (
     CONF_NAME,
-    CONF_URL,
+    CONF_PROTOCOL,
+    CONF_HOST,
+    CONF_PORT,
     CONF_USERNAME,
     CONF_PASSWORD,
 )
@@ -44,10 +46,15 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 _LOGGER = logging.getLogger(__name__)
 
+SCAN_INTERVAL = timedelta(minutes=10)
+
 # Validation of the user's configuration
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_URL): cv.string,
-    vol.Optional(CONF_USERNAME, default='admin'): cv.string,
+    vol.Required(CONF_NAME): cv.string,
+    vol.Required(CONF_PROTOCOL): cv.string,
+    vol.Required(CONF_HOST): cv.string,
+    vol.Required(CONF_PORT): cv.string,
+    vol.Required(CONF_USERNAME, default='admin'): cv.string,
     vol.Required(CONF_PASSWORD): cv.string,
 })
 
@@ -58,20 +65,26 @@ def setup_platform(
     discovery_info: DiscoveryInfoType | None = None
 ) -> None:
     """Set up the sensor platform."""
-    zte_modem_common.ZTE_MODEM_HOST = config[CONF_URL]
-    zte_modem_common.PASSWORD = config[CONF_PASSWORD]
-    add_entities([SmsSensor()])
+    sensor_name = config[CONF_NAME]
+    protocol = config[CONF_PROTOCOL]
+    host =  config[CONF_HOST]
+    port = config[CONF_PORT]
+    username = config[CONF_USERNAME]
+    password = config[CONF_PASSWORD]
+    sensor = SmsSensor(sensor_name, protocol, host, port, username, password)
+    add_entities([sensor])
 
 
 class SmsSensor(SensorEntity):
     _attr_name = "ZTE Modem SMS sensor"
 
-    def __init__(self):
+    def __init__(self, sensor_name, protocol, host, port, username, password):
         super().__init__()
         self.attrs: Dict[str, Any] = {}
-        self._name = CONF_NAME
+        self._name = sensor_name
         self._state = None
         self._available = True
+        self.connection = zte_modem_common.ZteModemConnection(protocol, host, port, username, password)
 
     @property
     def name(self) -> str:
@@ -81,7 +94,7 @@ class SmsSensor(SensorEntity):
     @property
     def unique_id(self) -> str:
         """Return the unique ID of the sensor."""
-        return CONF_NAME
+        return self._name
 
     @property
     def available(self) -> bool:
@@ -102,11 +115,10 @@ class SmsSensor(SensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         try:
-            sms = zte_modem_common.fetchSms()
+            sms = self.connection.fetchSms()
 
             self.attrs[ATTR_SMS_ID] = sms['id']
             # TODO map remaining attributes...
-
 
             self._state = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
             self._available = True

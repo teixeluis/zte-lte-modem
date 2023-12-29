@@ -4,6 +4,8 @@ import re
 import logging
 import sys
 import urllib.parse
+import datetime
+import dateutil.tz
 
 from jsonpath_ng.ext import parse
 
@@ -30,6 +32,7 @@ class ZteModemConnection:
         self.username = username
         self.password = password
         self.url = protocol + '://' + host + ':' + port
+        self.cookie = ''
 
     def getDeviceVersion(self):
         
@@ -59,21 +62,21 @@ class ZteModemConnection:
 
         return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
 
-    def getModemStatus(self):
+    def getModemStatus(self, attributeList):
         headers = { "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
-        params = { "multi_data": "1", "isTest": "false", "sms_received_flag_flag": "0", "sts_received_flag_flag": "0", "cmd": "modem_main_state%2Cpin_status%2Copms_wan_mode%2Copms_wan_auto_mode%2Cloginfo%2Cnew_version_state%2Ccurrent_upgrade_state%2Cis_mandatory%2Cwifi_dfs_status%2Cbattery_value%2Cppp_dial_conn_fail_counter%2Csignalbar%2Cnetwork_type%2Cnetwork_provider%2Copms_wan_auto_mode%2Cdhcp_wan_status%2Cppp_status%2CEX_SSID1%2Csta_ip_status%2CEX_wifi_profile%2Cm_ssid_enable%2CRadioOff%2Cwifi_onoff_state%2Cwifi_chip1_ssid1_ssid%2Cwifi_chip2_ssid1_ssid%2Csimcard_roam%2Clan_ipaddr%2Cstation_mac%2Cwifi_access_sta_num%2Cbattery_charging%2Cbattery_vol_percent%2Cbattery_pers%2Cspn_name_data%2Cspn_b1_flag%2Cspn_b2_flag%2Crealtime_tx_bytes%2Crealtime_rx_bytes%2Crealtime_time%2Crealtime_tx_thrpt%2Crealtime_rx_thrpt%2Cmonthly_rx_bytes%2Cmonthly_tx_bytes%2Cmonthly_time%2Cdate_month%2Cdata_volume_limit_switch%2Cdata_volume_limit_size%2Cdata_volume_alert_percent%2Cdata_volume_limit_unit%2Croam_setting_option%2Cupg_roam_switch%2Ccbns_server_enable%2Capp_debug_mode%2Codu_mode%2Cssid%2Cwifi_enable%2Cwifi_5g_enable%2Ccheck_web_conflict%2Cdial_mode%2Cppp_dial_conn_fail_counter%2Cwan_lte_ca%2Cprivacy_read_flag%2Cis_night_mode%2Cpppoe_status%2Cdhcp_wan_status%2Cstatic_wan_status%2Cvpn_conn_status%2Crmcc%2Crmnc%2Csms_received_flag%2Csts_received_flag%2Csms_unread_num" }    
+        #params = { "multi_data": "1", "isTest": "false", "sms_received_flag_flag": "0", "sts_received_flag_flag": "0", "cmd": "modem_main_state,pin_status,opms_wan_mode,opms_wan_auto_mode,loginfo,new_version_state,current_upgrade_state,is_mandatory,wifi_dfs_status,battery_value,ppp_dial_conn_fail_counter,signalbar,network_type,network_provider,opms_wan_auto_mode,dhcp_wan_status,ppp_status,EX_SSID1,sta_ip_status,EX_wifi_profile%,m_ssid_enable,RadioOff,wifi_onoff_state,wifi_chip1_ssid1_ssid,wifi_chip2_ssid1_ssid,simcard_roam,lan_ipaddr,station_mac,wifi_access_sta_num,battery_charging,battery_vol_percent,battery_pers,spn_name_data,spn_b1_flag,spn_b2_flag,realtime_tx_bytes,realtime_rx_bytes,realtime_time,realtime_tx_thrpt,realtime_rx_thrpt,monthly_rx_bytes,monthly_tx_bytes,monthly_time,date_month,data_volume_limit_switch,data_volume_limit_size,data_volume_alert_percent,data_volume_limit_unit,roam_setting_option,upg_roam_switch,cbns_server_enable,app_debug_mode,odu_mode,ssid,wifi_enable,wifi_5g_enable,check_web_conflict,dial_mode,ppp_dial_conn_fail_counter,wan_lte_ca,privacy_read_flag,is_night_mode,pppoe_status,dhcp_wan_status,static_wan_status,vpn_conn_status,rmcc,rmnc,sms_received_flag,sts_received_flag,sms_unread_num" }
+        params = { "multi_data": "1", "isTest": "false", "cmd": attributeList }
 
         return requests.get(self.url + ZTE_API_BASE + GET_CMD, params=params, headers=headers)
 
     def getLteStatus(self):
         headers = { "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
-        params = { "isTest": "false", "cmd": "network_type%2Crssi%2Crscp%2Clte_rsrp%2CZ5g_snr%2CZ5g_rsrp%2CZCELLINFO_band%2CZ5g_dlEarfcn%2Clte_ca_pcell_arfcn%2Clte_ca_pcell_band%2Clte_ca_scell_band%2Clte_ca_pcell_bandwidth%2Clte_ca_scell_info%2Clte_ca_scell_bandwidth%2Cwan_lte_ca%2Clte_pci%2CZ5g_CELL_ID%2CZ5g_SINR%2Ccell_id%2Cwan_lte_ca%2Clte_ca_pcell_band%2Clte_ca_pcell_bandwidth%2Clte_ca_scell_band%2Clte_ca_scell_bandwidth%2Clte_ca_pcell_arfcn%2Clte_ca_scell_arfcn%2Clte_multi_ca_scell_info%2Cwan_active_band%2Cnr5g_pci%2Cnr5g_action_band%2Cnr5g_cell_id", "multi_data": "1"}
+        params = { "isTest": "false", "cmd": "network_type,rssi,rscp,lte_rsrp,Z5g_snr,Z5g_rsrp,ZCELLINFO_band,Z5g_dlEarfcn,lte_ca_pcell_arfcn,lte_ca_pcell_band,lte_ca_scell_band,lte_ca_pcell_bandwidth,lte_ca_scell_info,lte_ca_scell_bandwidth,wan_lte_ca,lte_pci,Z5g_CELL_ID,Z5g_SINR,cell_id,wan_lte_ca,lte_ca_pcell_band,lte_ca_pcell_bandwidth,lte_ca_scell_band,lte_ca_scell_bandwidth,lte_ca_pcell_arfcn,lte_ca_scell_arfcn,lte_multi_ca_scell_info,wan_active_band,nr5g_pci,nr5g_action_band,nr5g_cell_id", "multi_data": "1"}
 
         return requests.get(self.url + ZTE_API_BASE + GET_CMD, params=params, headers=headers)
 
     def getSmsList(self, page, num_entries):
         headers = { "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
-        #params = { "isTest": "false", "cmd": "sms_data_total", "page": "0", "data_per_page": "500", "mem_store": "1", "tags": "10", "order_by": "order+by+id+desc" }
         params = { "isTest": "false", "cmd": "sms_data_total", "page": page, "data_per_page": num_entries, "mem_store": "1", "tags": "10", "order_by": "order+by+id+desc" }
         params_safe = urllib.parse.urlencode(params, safe='+')
 
@@ -92,8 +95,6 @@ class ZteModemConnection:
         params = { "isTest": "false", "goformId" : "SET_MSG_READ", "msg_id" : msgIdsStr, "tag": "0", "AD" : self.ad.lower() }
 
         return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
-
-    # Complex operations:
 
     def login(self):
         resp = self.getDeviceVersion()
@@ -142,6 +143,23 @@ class ZteModemConnection:
         _LOGGER.debug('login: cookie: ', self.cookie)
 
 
+    def logout(self):
+        """
+        logout closes the session with the modem, invalidating the session cookie.
+
+        :return: a json payload containing "result": "success" in case of a successful logout.
+        """
+        headers = { "Origin": self.url, "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01" }
+        params = { "isTest": "false", "goformId": "LOGOUT", "AD": self.ad}
+
+        return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
+
+    def checkLoginStatus(self):
+        headers = { "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
+        params = { "multi_data": "1", "isTest": "false", "cmd": "user" }
+
+        return requests.get(self.url + ZTE_API_BASE + GET_CMD, params=params, headers=headers)
+
     def getSms(self, unread):
         """
         getSms returns the list of SMS stored in the modem.
@@ -150,7 +168,6 @@ class ZteModemConnection:
 
         :return: the list of SMS, where each is a JSON object containing the respective fields.
         """ 
-        self.login()
         
         resp = self.getSmsList(0, 500)
 
@@ -178,8 +195,6 @@ class ZteModemConnection:
         :return: the list of new SMS, where each is a JSON object containing the respective fields.
         """ 
 
-        self.login()
-
         resp = self.getSmsList(0, 500)
 
         # Only return unread SMS:
@@ -203,8 +218,6 @@ class ZteModemConnection:
 
         :return: the new SMS as a JSON object containing the respective fields.
         """
-
-        self.login()
 
         # Because we are only reading (and marking as read) one SMS, we limit the query size to 1:
         resp = self.getSmsList(0, 1)
@@ -233,7 +246,7 @@ class ZteModemConnection:
 class ZteModemException(Exception):
     """Raise for my specific kind of exception"""
 
-# Atomic operations:
+# Utility operations:
 
 def calculatePasswordHash(password, ld):
     prefixHash =  hashlib.sha256(password.encode('utf-8')).hexdigest().upper()
@@ -246,6 +259,15 @@ def calculateAd(crVersion, waInnerVersion, rd):
 
     return hashlib.md5((prefixHash + rd).encode('utf-8')).hexdigest().upper()
 
+def parseSmsDate(smsDate):
+    dateFields = smsDate.split(",")
 
+    year = dateFields[0]
+    month = dateFields[1]
+    day = dateFields[2]
+    hours = dateFields[3]
+    minutes = dateFields[4]
+    seconds = dateFields[5]
+    timezone = dateFields[6]
 
-
+    return datetime.datetime(2000 + int(year), int(month), int(day), int(hours), int(minutes), int(seconds), tzinfo=dateutil.tz.tzoffset(None, 3600 * int(timezone)))

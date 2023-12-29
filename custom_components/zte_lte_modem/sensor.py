@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import smsutil
 
-from .zte_modem_common import ZteModemConnection, ZteModemException
+from .zte_modem_common import ZteModemConnection, ZteModemException, parseSmsDate
 
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
@@ -76,7 +76,8 @@ def setup_platform(
 
 
 class SmsSensor(SensorEntity):
-    _attr_name = "ZTE Modem SMS Sensor"
+    _attr_name = "ZTE LTE Modem SMS Sensor"
+    sensor_id = "zte_mf266_sms_sensor"
 
     def __init__(self, sensor_name, protocol, host, port, username, password):
         super().__init__()
@@ -94,7 +95,7 @@ class SmsSensor(SensorEntity):
     @property
     def unique_id(self) -> str:
         """Return the unique ID of the sensor."""
-        return self._name
+        return self.sensor_id
 
     @property
     def available(self) -> bool:
@@ -106,7 +107,7 @@ class SmsSensor(SensorEntity):
         return self._state
 
     @property
-    def device_state_attributes(self) -> Dict[str, Any]:
+    def extra_state_attributes(self) -> Dict[str, Any]:
         return self.attrs
 
     def update(self) -> None:
@@ -115,13 +116,30 @@ class SmsSensor(SensorEntity):
         This is the only method that should fetch new data for Home Assistant.
         """
         try:
+            loginStatus = self.connection.checkLoginStatus()
+
+            # If there isn't a valid session, try to login:
+            if loginStatus.json()['user'] == '':
+                self.connection.login()
+
             sms = self.connection.fetchSms()
 
-            self.attrs[ATTR_SMS_ID] = sms['id']
-            # TODO map remaining attributes...
+            # SMS attributes mapping:
 
+            self.attrs[ATTR_SMS_ID] = sms['id']
+            self.attrs[ATTR_SMS_DATE] = parseSmsDate(sms['date'])
+            self.attrs[ATTR_SMS_FROM] = sms['number']
+            self.attrs[ATTR_SMS_TO] = "" ## currently not possible to obtain recipient MSISDN (which is the customer own number)
+            self.attrs[ATTR_SMS_UNREAD] = sms['tag']
+            self.attrs[ATTR_SMS_DRAFT_GROUP_ID] = sms['draft_group_id']
+            self.attrs[ATTR_SMS_RCVD_ALL_CONCAT_SMS] = sms['received_all_concat_sms']
+            self.attrs[ATTR_SMS_CONCAT_SMS_TOTAL] = sms['concat_sms_total']
+            self.attrs[ATTR_SMS_CONCAT_SMS_RCVD] = sms['concat_sms_received']
+            self.attrs[ATTR_SMS_CLASS] = sms['sms_class']
+
+            # State holds the actual SMS payload:
             self._state = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
             self._available = True
-        except (ZteModemException):
+        except (Exception):
             self._available = False
             _LOGGER.exception("Error retrieving data from ZTE modem.")

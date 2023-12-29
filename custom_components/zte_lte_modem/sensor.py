@@ -121,25 +121,33 @@ class SmsSensor(SensorEntity):
             # If there isn't a valid session, try to login:
             if loginStatus.json()['user'] == '':
                 self.connection.login()
+                loginStatus = self.connection.checkLoginStatus()
 
-            sms = self.connection.fetchSms()
+            if loginStatus.json()['user'] != self.connection.username:
+                self._available = False
+                _LOGGER.exception("Unsucessful login or modem busy with another user.")
+            else:
+                sms = self.connection.fetchSms()
 
-            # SMS attributes mapping:
+                # Check if 
+                if sms != None:
+                    # SMS attributes mapping:
 
-            self.attrs[ATTR_SMS_ID] = sms['id']
-            self.attrs[ATTR_SMS_DATE] = parseSmsDate(sms['date'])
-            self.attrs[ATTR_SMS_FROM] = sms['number']
-            self.attrs[ATTR_SMS_TO] = "" ## currently not possible to obtain recipient MSISDN (which is the customer own number)
-            self.attrs[ATTR_SMS_UNREAD] = sms['tag']
-            self.attrs[ATTR_SMS_DRAFT_GROUP_ID] = sms['draft_group_id']
-            self.attrs[ATTR_SMS_RCVD_ALL_CONCAT_SMS] = sms['received_all_concat_sms']
-            self.attrs[ATTR_SMS_CONCAT_SMS_TOTAL] = sms['concat_sms_total']
-            self.attrs[ATTR_SMS_CONCAT_SMS_RCVD] = sms['concat_sms_received']
-            self.attrs[ATTR_SMS_CLASS] = sms['sms_class']
+                    self.attrs[ATTR_SMS_ID] = sms['id']
+                    self.attrs[ATTR_SMS_DATE] = parseSmsDate(sms['date'])
+                    self.attrs[ATTR_SMS_FROM] = sms['number']
+                    self.attrs[ATTR_SMS_TO] = "" ## currently not possible to obtain recipient MSISDN (which is the customer own number)
+                    self.attrs[ATTR_SMS_UNREAD] = sms['tag']
+                    self.attrs[ATTR_SMS_DRAFT_GROUP_ID] = sms['draft_group_id']
+                    self.attrs[ATTR_SMS_RCVD_ALL_CONCAT_SMS] = sms['received_all_concat_sms']
+                    self.attrs[ATTR_SMS_CONCAT_SMS_TOTAL] = sms['concat_sms_total']
+                    self.attrs[ATTR_SMS_CONCAT_SMS_RCVD] = sms['concat_sms_received']
+                    self.attrs[ATTR_SMS_CLASS] = sms['sms_class']
 
-            # State holds the actual SMS payload:
-            self._state = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
-            self._available = True
+                    # State holds the actual SMS payload:
+                    self._state = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
+
+                self._available = True
         except (Exception):
             self._available = False
             _LOGGER.exception("Error retrieving data from ZTE modem.")

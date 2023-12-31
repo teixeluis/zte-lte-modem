@@ -35,37 +35,40 @@ There are two (known) command endpoints:
 
 1. Query endpoint:
 
-1.1. GET /goform/goform_get_cmd_process
+```
+GET /goform/goform_get_cmd_process
+```
 
 This endpoint accepts at least the following query parameters:
 
-isTest - always sent with value set to false. Not sure what is the effect of true;
-cmd - this parameter behaves as a field selector, accepting the names of the fields we want to see in the respond. Each field is comma separated and obviously URL encoded.
-multi_data - this parameter is used in some requests. Not sure what it does;
+ * isTest - always sent with value set to false. Not sure what is the effect of true;
+* cmd - this parameter behaves as a field selector, accepting the names of the fields we want to see in the respond. Each field is comma separated and obviously URL encoded.
+* multi_data - this parameter is used in some requests. Not sure what it does;
 
-then depending on the command (selected fields), there are other parameters that can occur as well. For example 
+Depending on the command (selected fields), there are other parameters that can occur as well. For example 
 when obtaining the SMS list (cmd=sms_data_total), the following parameters are also present:
 
-page - the page to show;
-data_per_page - the number of SMS to display in each page;
-mem_store - always 1. To be confirmed but it is possible that is used to select between internal memory and the SIM card as the data source of SMS messages;
-tags - each unread SMS is marked with "tag": "1". Possibly used to filter how many unread SMS to include in the response, but to be confirmed.
+* page - the page to show;
+* data_per_page - the number of SMS to display in each page;
+* mem_store - always 1. To be confirmed but it is possible that is used to select between internal memory and the SIM card as the data source of SMS messages;
+* tags - each unread SMS is marked with "tag": "1". Possibly used to filter how many unread SMS to include in the response, but to be confirmed.
 
 2. Action endpoint:
 
-2.1. POST /goform/goform_set_cmd_process
+```
+POST /goform/goform_set_cmd_process
+```
 
 This endpoint is used to execute actions on the modem and it accepts at least the following form data parameters (URL encoded parameters sent in the request body):
 
-isTest - always sent with value set to false. Not sure what is the effect of true;
-goformId - the action to execute. Some of the actions are:
+ * isTest - always sent with value set to false. Not sure what is the effect of true;
+ * goformId - the action to execute. Some of the actions are:
+   * LOGIN_MULTI_USER - used to authenticate with the modem
+   * LOGOUT - logout and invalidate the session cookie
+   * SET_MSG_READ - mark a given SMS as read
+   * SEND_SMS - send an SMS
 
- * LOGIN_MULTI_USER - used to authenticate with the modem
- * LOGOUT - logout and invalidate the session cookie
- * SET_MSG_READ - mark a given SMS as read
- * SEND_SMS - send an SMS
-
-AD - required for some of the actions (e.g. LOGIN_MULTI_USER, LOGOUT and SET_MSG_READ). Described with further detail below, it is a key derived from crVersion, waInnerVersion and RD.
+ * AD - required for some of the actions (e.g. LOGIN_MULTI_USER, LOGOUT and SET_MSG_READ). Described with further detail below, it is a key derived from crVersion, waInnerVersion and RD.
 
 <TODO - list all the known cmd and goformId fields>
 

@@ -238,8 +238,16 @@ class ZteModemConnection:
 
         return None
 
+    def manageSession(self):
+        loginStatus = self.checkLoginStatus()
 
+        # If there isn't a valid session, try to login:
+        if loginStatus.json()['user'] == '':
+            self.login()
+            loginStatus = self.checkLoginStatus()
 
+        if loginStatus.json()['user'] != self.username:
+            raise ZteModemException("Unsucessful login or modem busy with another user.")
 
 # Exceptions
 

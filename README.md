@@ -24,9 +24,10 @@ done in order to obtain the SMS data.
 
 ## Protocol
 
-The modem accepts HTTP requests on the same host and port as the web interface. In my setup the modem exposes
+The modem accepts API requests on the same host and port as the web interface. In my setup the modem exposes
 the local IP 192.168.254.1 and listens for requests in port 80.
 
+The API structure is loosely REST based, with JSON responses, but with request payloads encoded as form data.
 
 ### Structure
 
@@ -41,17 +42,17 @@ GET /goform/goform_get_cmd_process
 
 This endpoint accepts at least the following query parameters:
 
- * isTest - always sent with value set to false. Not sure what is the effect of true;
-* cmd - this parameter behaves as a field selector, accepting the names of the fields we want to see in the respond. Each field is comma separated and obviously URL encoded.
-* multi_data - this parameter is used in some requests. Not sure what it does;
+* `isTest` - always sent with value set to false. Not sure what is the effect of true;
+* `cmd` - this parameter behaves as a field selector, accepting the names of the fields we want to see in the respond. Each field is comma separated and obviously URL encoded.
+* `multi_data` - this parameter is used in some requests. Not sure what it does;
 
 Depending on the command (selected fields), there are other parameters that can occur as well. For example 
 when obtaining the SMS list (cmd=sms_data_total), the following parameters are also present:
 
-* page - the page to show;
-* data_per_page - the number of SMS to display in each page;
-* mem_store - always 1. To be confirmed but it is possible that is used to select between internal memory and the SIM card as the data source of SMS messages;
-* tags - each unread SMS is marked with "tag": "1". Possibly used to filter how many unread SMS to include in the response, but to be confirmed.
+* `page` - the page to show;
+* `data_per_page` - the number of SMS to display in each page;
+* `mem_store` - always 1. To be confirmed but it is possible that is used to select between internal memory and the SIM card as the data source of SMS messages;
+* `tags` - each unread SMS is marked with "tag": "1". Possibly used to filter how many unread SMS to include in the response, but to be confirmed.
 
 2. Action endpoint:
 
@@ -61,14 +62,14 @@ POST /goform/goform_set_cmd_process
 
 This endpoint is used to execute actions on the modem and it accepts at least the following form data parameters (URL encoded parameters sent in the request body):
 
- * isTest - always sent with value set to false. Not sure what is the effect of true;
- * goformId - the action to execute. Some of the actions are:
-   * LOGIN_MULTI_USER - used to authenticate with the modem
-   * LOGOUT - logout and invalidate the session cookie
-   * SET_MSG_READ - mark a given SMS as read
-   * SEND_SMS - send an SMS
+ * `isTest` - always sent with value set to false. Not sure what is the effect of true;
+ * `goformId` - the action to execute. Some of the actions are:
+   * `LOGIN_MULTI_USER` - used to authenticate with the modem
+   * `LOGOUT` - logout and invalidate the session cookie
+   * `SET_MSG_READ` - mark a given SMS as read
+   * `SEND_SMS` - send an SMS
 
- * AD - required for some of the actions (e.g. LOGIN_MULTI_USER, LOGOUT and SET_MSG_READ). Described with further detail below, it is a key derived from crVersion, waInnerVersion and RD.
+ * `AD` - required for some of the actions (e.g. LOGIN_MULTI_USER, LOGOUT and SET_MSG_READ). Described with further detail below, it is a key derived from crVersion, waInnerVersion and RD.
 
 <TODO - list all the known cmd and goformId fields>
 
@@ -244,6 +245,7 @@ With the correct details for your modem and admin credentials.
  * add more sensors for other modem features;
  * add service for sending SMS through the modem;
  * use async library for the http communication (aiohttp or aiohttp_requests);
+ * understand purpose of some of the modem API query parameters.
 
 ## References
 
@@ -252,4 +254,4 @@ With the correct details for your modem and admin credentials.
  * [Creating your first integration](https://developers.home-assistant.io/docs/creating_component_index/)
  * [aiohttp-requests](https://pypi.org/project/aiohttp-requests/)
  * [Example Platform](https://github.com/home-assistant/example-custom-config/tree/master/custom_components/example_load_platform)
-
+ * [Component Generic Discovery](https://home-assistant-china.github.io/developers/component_generic_discovery/)

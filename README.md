@@ -71,7 +71,9 @@ This endpoint is used to execute actions on the modem and it accepts at least th
 
  * `AD` - required for some of the actions (e.g. LOGIN_MULTI_USER, LOGOUT and SET_MSG_READ). Described with further detail below, it is a key derived from crVersion, waInnerVersion and RD.
 
-<TODO - list all the known cmd and goformId fields>
+There are many possible fields than be specified in the cmd parameter. Below is a list of several of those:
+
+ * [list of known cmd fields](./cmd_fields.md)
 
 ### Authentication
 
@@ -223,29 +225,46 @@ This integration exposes some of the features of this modem to Home Assistant. M
 
 Check the requirements.txt file for the packages needed by this project.
 
-### Sample configuration:
+### Configure the integration:
 
 In your configuration.yaml add an entry similar to:
 
 ```
-sensor:
-  - platform: zte_lte_modem
-    name: zte_lte_modem_mf266
-    protocol: http
-    host: 192.168.1.1
-    port: 80
-    username: admin
-    password: 2secure
+zte_lte_modem:
+  protocol: http
+  host: 192.168.1.1
+  port: 80
+  username: admin
+  password: 2secure
 ```
 
-With the correct details for your modem and admin credentials.
+With the correct details for your modem and admin credentials. After this is added and HA is restarted, the
+entities will be automatically created.
+
+### Configure the sensors:
+
+Sensors are created with default configurations if you don't specify any. But you may want to customize some
+settings. Here are examples for each sensor:
+
+
+#### SMS Sensor
+
+```
+sensors:
+  - platform: zte_lte_modem
+    name: zte_sms_sensor
+  
+  - platform: zte_lte_modem
+    name: zte_state_sensor
+    enabled_attributes: cell_id,lte_rsrp,signalbar,wan_active_band,spn_name_data
+```
 
 ## TODO
 
- * add more sensors for other modem features;
+ * add more entities for other modem features;
  * add service for sending SMS through the modem;
  * use async library for the http communication (aiohttp or aiohttp_requests);
- * understand purpose of some of the modem API query parameters.
+ * understand and document the purpose of some of the modem API query parameters.
 
 ## References
 

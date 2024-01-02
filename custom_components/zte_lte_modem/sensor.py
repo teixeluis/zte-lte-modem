@@ -23,6 +23,7 @@ from .const import (
     ATTR_SMS_CONCAT_SMS_TOTAL,
     ATTR_SMS_CONCAT_SMS_RCVD,
     ATTR_SMS_CLASS,
+    CONF_ATTRIB_LIST,
 )
 
 from homeassistant.core import HomeAssistant
@@ -40,19 +41,29 @@ def setup_platform(
     config: ConfigType,
     add_entities: AddEntitiesCallback,
     discovery_info=None):
-    # We only want this platform to be set up via discovery.
+
     #if discovery_info is None:
     #   return
     
-    name = config.get(CONF_NAME, "zte_sms_sensor")
     connection = hass.data[DOMAIN]["connection"]
-    sensor = SmsSensor(name, connection)
 
-    add_entities([sensor])
+    sms_sensor_name = config.get(CONF_NAME, "zte_sms_sensor")
+    sms_sensor = SmsSensor(sms_sensor_name, connection)
+
+    status_sensor_name = config.get(CONF_NAME, "zte_status_sensor")
+    status_sensor_attributes = config.get(CONF_ATTRIB_LIST, "cell_id,lte_rsrp,signalbar,wan_active_band,spn_name_data")
+    status_sensor = StatusSensor(status_sensor_name, status_sensor_attributes, connection)
+
+    add_entities([sms_sensor, status_sensor])
 
 
 class SmsSensor(SensorEntity):
-
+    """
+    SmsSensor provides a new record on each SMS received by the modem.
+    
+    Besides the SMS payload (which populates the sensor state), the SMS metadata maps to the HA sensor state attributes,
+    providing detailed information on each received SMS.
+    """
     def __init__(self, name, connection):
         super().__init__()
         self.attrs: Dict[str, Any] = {}
@@ -114,6 +125,70 @@ class SmsSensor(SensorEntity):
 
                 # State holds the actual SMS payload:
                 self._state = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
+
+            self._available = True
+        except Exception as ex:
+            self._available = False
+            _LOGGER.exception("Error retrieving data from ZTE modem: %s", str(ex))
+
+
+class StatusSensor(SensorEntity):
+    """
+    StatusSensor provides in realtime the values returned by the modem, given a set of user configurable attributes
+    which are then passed to the modem API as field selectors.
+    
+    """
+    def __init__(self, name, status_sensor_attributes, connection):
+        super().__init__()
+        self.attrs: Dict[str, Any] = {}
+        self._name = name
+        self.sensor_id = "zte_status_sensor"
+        self._state = None
+        self._available = True
+        self.status_sensor_attributes = status_sensor_attributes
+        self.connection = connection
+
+    @property
+    def name(self) -> str:
+        """Return the name of the entity."""
+        return self._name
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID of the sensor."""
+        return self.sensor_id
+
+    @property
+    def available(self) -> bool:
+        """Return True if entity is available."""
+        return self._available
+
+    @property
+    def state(self) -> Optional[str]:
+        return self._state
+
+    @property
+    def extra_state_attributes(self) -> Dict[str, Any]:
+        return self.attrs
+
+    def update(self) -> None:
+        """Fetch new state data from the modem API for the sensor.
+
+        """
+        try:
+            self.connection.manageSession()
+
+            status = self.connection.getModemStatus(self.status_sensor_attributes)
+
+            # Clear attributes before updating
+            self.attrs.clear()
+
+            # Check if status is available
+            if status != None:
+                modem_attribs = self.status_sensor_attributes.split(",")
+
+                for modem_attrib in modem_attribs:
+                    self.attrs[modem_attrib] = status.json()[modem_attrib]
 
             self._available = True
         except Exception as ex:

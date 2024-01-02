@@ -54,8 +54,4 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     hass.data[DOMAIN] = {"connection": connection}
     load_platform(hass, 'sensor', DOMAIN, {}, hass_config=config)
 
-    #hass.helpers.discovery.load_platform('sensor', DOMAIN, {}, config)
-
-    #hass.create_task(hass.config_entries.forward_entry_setup(config_entry, "sensor"))
-
     return True

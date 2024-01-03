@@ -18,21 +18,17 @@ authorities) sent to this number which can be useful or important to know.
 The only method available to the user is to visualize these SMS through the modem web management UI. This is both 
 cumbersome and (by default) only accessible via the local network where the modem is connected to.
 
-By analyzing the client side javascript code the web UI uses for sending commands to the modem, I
-was able to understand the various steps needed for the authentication, and the queries to be
-done in order to obtain the SMS data.
+By analyzing the client side javascript code, I could see the types of requests sent to the modem and their structure. With this I was able to understand the various steps needed for the authentication, and the queries to be done in order to obtain the SMS data.
 
 ## Protocol
 
-The modem accepts API requests on the same host and port as the web interface. In my setup the modem exposes
-the local IP 192.168.254.1 and listens for requests in port 80.
+The modem accepts API requests on the same host and port as the web interface. In my setup the modem exposes the local IP 192.168.254.1 and listens for requests in port 80.
 
 The API structure is loosely REST based, with JSON responses, but with request payloads encoded as form data.
 
 ### Structure
 
 There are two (known) command endpoints:
-
 
 1. Query endpoint:
 
@@ -71,17 +67,16 @@ This endpoint is used to execute actions on the modem and it accepts at least th
 
  * `AD` - required for some of the actions (e.g. LOGIN_MULTI_USER, LOGOUT and SET_MSG_READ). Described with further detail below, it is a key derived from crVersion, waInnerVersion and RD.
 
-There are many possible fields than be specified in the cmd parameter. Below is a list of several of those:
+There are many possible fields that can be specified in the cmd parameter. Below is a list of several of those:
 
  * [list of known cmd fields](./cmd_fields.md)
 
 ### Authentication
 
-The authentication process is a bit convoluted and is required for several but not all of the types of queries
-or operations. First the client performs a query to obtain version data:
+The authentication process is a bit convoluted and is required for several but not all of the types of queries or operations. First the client performs a query to obtain version data:
 
 ```
-GET /goform/goform_get_cmd_process?isTest=false&cmd=Language%2Ccr_version%2Cwa_inner_version"
+GET /goform/goform_get_cmd_process?isTest=false&cmd=Language%2Ccr_version%2Cwa_inner_version
 ```
 
 The device then responds with the a payload containing the requested fields: Language, cr_version and wa_inner_version:
@@ -101,7 +96,7 @@ X-XSS-Protection: 1; mode=block
 Then via a separate request the parameter LD is obtained:
 
 ```
-GET /goform/goform_get_cmd_process?isTest=false&cmd=LD"
+GET /goform/goform_get_cmd_process?isTest=false&cmd=LD
 ```
 
 ```
@@ -126,6 +121,7 @@ GET /goform/goform_get_cmd_process?isTest=false&cmd=RD
 
 And similarly, a json response containing the RD parameter is returned:
 
+```
 HTTP/1.1 200 OK
 Server: WebServer-Webs
 Pragma: no-cache
@@ -135,6 +131,7 @@ X-Frame-Options: sameorigin
 X-XSS-Protection: 1; mode=block
 
 {"RD":"0123456789abcdef0123456789abcdef"}
+```
 
 This is a smaller string, only 32 characters long. It also hex encodes an array of bytes. In this case
 the alpha digits are in lowercase.
@@ -177,7 +174,7 @@ The AD parameter is calculated as follows:
     return hashlib.md5((prefixHash + rd).encode('utf-8')).hexdigest().upper()
 ```
 
-So basically the *cr_version* and *wa_inner_version* parameters obtained from the modem are concatenated,
+So basically the `cr_version` and `wa_inner_version` parameters obtained from the modem are concatenated,
 and the resulting string is used to calculate a MD5 hash. The latter is then converted to 
 an hex string. This is then concatenated to RD (also obtained from the modem in previous request),
 which is also again used to calculate a final MD5 hash. This has is then converted to hex
@@ -264,7 +261,8 @@ sensors:
  * add more entities for other modem features;
  * add service for sending SMS through the modem;
  * use async library for the http communication (aiohttp or aiohttp_requests);
- * understand and document the purpose of some of the modem API query parameters.
+ * understand and document the purpose of some of the modem API query parameters;
+ * add validators to enforce distinction of configuration parameters, between different sensors.
 
 ## References
 

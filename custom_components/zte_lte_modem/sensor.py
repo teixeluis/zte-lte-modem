@@ -24,6 +24,7 @@ from .const import (
     ATTR_SMS_CONCAT_SMS_RCVD,
     ATTR_SMS_CLASS,
     CONF_ATTRIB_LIST,
+    MODEM_STATE_ATTR
 )
 
 from homeassistant.core import HomeAssistant
@@ -105,11 +106,11 @@ class SmsSensor(SensorEntity):
 
             sms = self.connection.fetchSms()
 
-            # Clear attributes before updating
-            self.attrs.clear()
-
             # Check if an SMS was returned:
             if sms != None:
+                # Clear attributes before updating
+                self.attrs.clear()
+                
                 # SMS attributes mapping:
 
                 self.attrs[ATTR_SMS_ID] = sms['id']
@@ -129,7 +130,7 @@ class SmsSensor(SensorEntity):
             self._available = True
         except Exception as ex:
             self._available = False
-            _LOGGER.exception("Error retrieving data from ZTE modem: %s", str(ex))
+            _LOGGER.exception("SmsSensor: error retrieving data from ZTE modem: %s", str(ex))
 
 
 class StatusSensor(SensorEntity):
@@ -178,7 +179,8 @@ class StatusSensor(SensorEntity):
         try:
             self.connection.manageSession()
 
-            status = self.connection.getModemStatus(self.status_sensor_attributes)
+            # Always include the modem_main_state attribute in the query as it will be used as the state attribute of the entity:
+            status = self.connection.getModemStatus(self.status_sensor_attributes + "," + MODEM_STATE_ATTR)
 
             # Clear attributes before updating
             self.attrs.clear()
@@ -190,7 +192,8 @@ class StatusSensor(SensorEntity):
                 for modem_attrib in modem_attribs:
                     self.attrs[modem_attrib] = status.json()[modem_attrib]
 
+            self._state = status.json()[MODEM_STATE_ATTR]
             self._available = True
         except Exception as ex:
             self._available = False
-            _LOGGER.exception("Error retrieving data from ZTE modem: %s", str(ex))
+            _LOGGER.exception("StatusSensor: error retrieving data from ZTE modem: %s", str(ex))

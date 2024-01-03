@@ -29,6 +29,7 @@ fota_idle
 is_mandatory
 is_night_mode
 lan_ipaddr
+LD
 loginfo
 lte_ca_pcell_arfcn
 lte_ca_pcell_band
@@ -86,6 +87,7 @@ simcard_roam
 sms_class
 sms_cmd
 sms_cmd_status_result
+sms_data_total
 sms_dev_unread_num
 sms_nv_draftbox_total
 sms_nv_rev_total

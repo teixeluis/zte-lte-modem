@@ -10,3 +10,5 @@ ATTR_SMS_CONCAT_SMS_RCVD = "sms_concat_sms_rcvd"
 ATTR_SMS_CLASS = "sms_class"
 
 CONF_ATTRIB_LIST = "enabled_attributes"
+
+MODEM_STATE_ATTR = "modem_main_state"

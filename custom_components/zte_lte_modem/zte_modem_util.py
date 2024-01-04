@@ -2,6 +2,7 @@ from zte_modem_common import ZteModemConnection, parseSmsDate
 
 import smsutil
 import json
+import datetime
 
 from getpass import getpass
 
@@ -40,6 +41,18 @@ def doFetchSms(connection):
     else:
         print('zte_modem_util: no more SMS to read!')
 
+def doSendSms(connection):
+    recipient = input("Recipient number: \n")
+    message = input("Message to send: \n")
+    date = datetime.datetime.now()
+
+    resp = connection.sendSms(recipient, date, message)
+
+    if resp.json()['result'] == 'success':
+        print('zte_modem_util: doSendSms: SMS successfully sent.')
+    else:
+        print('zte_modem_util: doSendSms: failed to send sms: ', resp.json()['result'])
+
 def doCheckUser(connection):
     resp = connection.checkLoginStatus()
     print('zte_modem_util: doCheckUser: ', json.dumps(resp.json(), indent=4))
@@ -52,5 +65,6 @@ connection.login()
 #doFetchSms(connection)
 #doGetAllSms(connection)
 #doGetModemStatus(connection, "cell_id,lte_rsrp,signalbar,wan_active_band,spn_name_data")
+#doCheckUser(connection)
 
-doCheckUser(connection)
+doSendSms(connection)

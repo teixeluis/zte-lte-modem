@@ -6,6 +6,7 @@ import sys
 import urllib.parse
 import datetime
 import dateutil.tz
+import smsutil
 
 from jsonpath_ng.ext import parse
 
@@ -96,51 +97,66 @@ class ZteModemConnection:
 
         return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
 
+    def sendSms(self, recipient, date, message):
+        """
+        sendSms sends an SMS through the modem
+
+        :recipient: the recipient number (MSISDN)
+        :message: the message payload
+        """
+
+        hexMessage = encodeSms(message)
+        smsDate = encodeSmsDate(date)
+        headers = { "Origin": self.url, "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
+        params = { "isTest": "false", "goformId": "SEND_SMS", "notCallback": "true", "Number": recipient, "sms_time": smsDate, "MessageBody": hexMessage, "ID": "-1", "encode_type": "UNICODE", "AD": self.ad.lower() }
+
+        return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
+
     def login(self):
         resp = self.getDeviceVersion()
 
-        _LOGGER.debug('login: getDeviceVersion response: ', resp.content)
+        _LOGGER.debug('login: getDeviceVersion response: %s', str(resp.content))
 
         query = parse('$.cr_version')
         crVersion = query.find(resp.json())[0].value
 
-        _LOGGER.debug('login: crVersion = ', crVersion)
+        _LOGGER.debug('login: crVersion = %s', str(crVersion))
 
         query = parse('$.wa_inner_version')
         waInnerVersion = query.find(resp.json())[0].value
 
-        _LOGGER.debug('login: waInnerVersion = ', waInnerVersion)
+        _LOGGER.debug('login: waInnerVersion = %s', str(waInnerVersion))
 
         resp = self.getLd()
 
         query = parse('$.LD')
         ld = query.find(resp.json())[0].value
         
-        _LOGGER.debug('login: ld = ', ld, ' resp body = ', resp.content)
+        _LOGGER.debug('login: ld = %s', str(ld))
 
         resp = self.getRd()
         query = parse('$.RD')
         rd = query.find(resp.json())[0].value
 
-        _LOGGER.debug('login: rd = ', rd, ' resp body = ', resp.content)
+        _LOGGER.debug('login: rd = %s', str(rd))
 
         resp =  self.sendLoginCommand(crVersion, waInnerVersion, ld, rd)
 
         if ( result := resp.json()['result'] ) != '0':
             raise ZteModemException("Non-successful login result: ", result)
         
-        _LOGGER.debug('login: http response: ', resp.status_code, ' body: ', resp.content)
+        _LOGGER.debug('login: http response: %s, body: %s', str(resp.status_code), str(resp.content))
 
         cookieHeader = resp.headers.get("Set-Cookie")
 
         pattern = re.compile('stok\=\".*\"')
 
-        _LOGGER.debug('login: cookieHeader: ', cookieHeader)
+        _LOGGER.debug('login: cookieHeader: %s', str(cookieHeader))
 
         result = pattern.search(cookieHeader)
         
         self.cookie = result.group(0)
-        _LOGGER.debug('login: cookie: ', self.cookie)
+        _LOGGER.debug('login: cookie: %s', str(self.cookie))
 
 
     def logout(self):
@@ -279,3 +295,25 @@ def parseSmsDate(smsDate):
     timezone = dateFields[6]
 
     return datetime.datetime(2000 + int(year), int(month), int(day), int(hours), int(minutes), int(seconds), tzinfo=dateutil.tz.tzoffset(None, 3600 * int(timezone)))
+
+def encodeSmsDate(date):
+    # Obtain the year last two digits:
+    year = str(date.year)[2:4]
+
+    month = f'{date.month:02}'
+    day = f'{date.day:02}'
+    hours = f'{date.hour:02}'
+    minutes = f'{date.minute:02}'
+    seconds = f'{date.second:02}'
+    tzinfo = '0'
+    
+    if date.tzinfo != None:
+        tzinfo = str(int(date.tzinfo) / 3600)
+
+    return year + ";" + month + ";" + day + ";" + hours + ";" + minutes + ";" + seconds + ";" + tzinfo
+
+def encodeSms(message):
+    return bytes.hex(smsutil.encode(message)).upper()
+
+def decodeSms(encodedMessage):
+    return smsutil.decode(bytes.fromhex(encodedMessage), encoding='utf_16_be')

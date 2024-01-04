@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import logging
-import smsutil
 
-from .zte_modem_common import parseSmsDate
+from .zte_modem_common import parseSmsDate, decodeSms
 
 from datetime import timedelta
 from typing import Any, Dict, Optional
@@ -125,7 +124,7 @@ class SmsSensor(SensorEntity):
                 self.attrs[ATTR_SMS_CLASS] = sms['sms_class']
 
                 # State holds the actual SMS payload:
-                self._state = smsutil.decode(bytes.fromhex(sms['content']), encoding='utf_16_be')
+                self._state = decodeSms(sms['content'])
 
             self._available = True
         except Exception as ex:

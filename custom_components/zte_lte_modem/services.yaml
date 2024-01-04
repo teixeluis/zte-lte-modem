@@ -1,0 +1,12 @@
+zte_send_sms:
+  fields:
+    sms_to:
+      required: true
+      advanced: false
+      example: "+351931234567"
+      default: ""
+    sms_payload:
+      required: true
+      advanced: false
+      example: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      default: ""

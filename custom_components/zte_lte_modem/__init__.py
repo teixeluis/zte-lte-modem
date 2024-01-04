@@ -17,6 +17,7 @@ from homeassistant.const import (
 )
 
 from .zte_modem_common import ZteModemConnection
+from .service import handle_request
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,6 +53,12 @@ def setup(hass: HomeAssistant, config: ConfigType) -> bool:
     _LOGGER.debug("setup: created modem connection object.")
 
     hass.data[DOMAIN] = {"connection": connection}
+
+    def handle_zte_send_sms(call):
+        handle_request(call, connection)
+
     load_platform(hass, 'sensor', DOMAIN, {}, hass_config=config)
+    hass.services.register(DOMAIN, "zte_send_sms", handle_zte_send_sms)
+
 
     return True

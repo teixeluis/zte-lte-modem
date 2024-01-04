@@ -8,6 +8,7 @@ ATTR_SMS_RCVD_ALL_CONCAT_SMS = "sms_rcvd_all_concat_sms"
 ATTR_SMS_CONCAT_SMS_TOTAL = "sms_concat_sms_total"
 ATTR_SMS_CONCAT_SMS_RCVD = "sms_concat_sms_rcvd"
 ATTR_SMS_CLASS = "sms_class"
+ATTR_SMS_PAYLOAD = "sms_payload"
 
 CONF_ATTRIB_LIST = "enabled_attributes"
 

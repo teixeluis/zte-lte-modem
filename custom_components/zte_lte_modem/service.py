@@ -24,7 +24,8 @@ def handle_request(call, connection):
 
     #hass.states.set(DOMAIN + "." + SERVICE, sms_to, sms_payload)
 
-    connection.manageSession()
+    #connection.manageSession()
+    connection.login()
 
     resp = connection.sendSms(sms_to, date, sms_payload)
 

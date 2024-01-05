@@ -104,11 +104,12 @@ class ZteModemConnection:
         :recipient: the recipient number (MSISDN)
         :message: the message payload
         """
-
-        hexMessage = encodeSms(message)
+        
+        encoding = determineSmsEncoding(message)
+        hexMessage = encodeSms(message, encoding)
         smsDate = encodeSmsDate(date)
         headers = { "Origin": self.url, "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
-        params = { "isTest": "false", "goformId": "SEND_SMS", "notCallback": "true", "Number": recipient, "sms_time": smsDate, "MessageBody": hexMessage, "ID": "-1", "encode_type": "UNICODE", "AD": self.ad.lower() }
+        params = { "isTest": "false", "goformId": "SEND_SMS", "notCallback": "true", "Number": recipient, "sms_time": smsDate, "MessageBody": hexMessage, "ID": "-1", "encode_type": encoding, "AD": self.ad.lower() }
 
         return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
 
@@ -312,8 +313,21 @@ def encodeSmsDate(date):
 
     return year + ";" + month + ";" + day + ";" + hours + ";" + minutes + ";" + seconds + ";" + tzinfo
 
-def encodeSms(message):
-    return bytes.hex(smsutil.encode(message)).upper()
+def encodeSms(message, encoding):
+    if encoding == "UNICODE":
+        message_sms = smsutil.encode(message)
+    else:  
+        message_sms = message.encode("utf_16_be")
+
+    return bytes.hex(message_sms).upper()
 
 def decodeSms(encodedMessage):
     return smsutil.decode(bytes.fromhex(encodedMessage), encoding='utf_16_be')
+
+def determineSmsEncoding(message):
+    sms = smsutil.split(message)
+
+    if sms.encoding == "gsm0338":
+        return "GSM7_default"
+    
+    return "UNICODE"

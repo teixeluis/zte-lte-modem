@@ -11,6 +11,8 @@ Also its antennas are directional, providing more gain than the omnidirectional 
 smartphones and 4G USB sticks. The technician installing the modem will normally care for aiming it towards
 the strongest cellular tower, for increased signal strength, performance and reliability.
 
+![ZTE MF266](docs/images/zte_mf266.jpg)
+
 Because the data only plan associated to this service also includes SMS and a regular MSISDN (phone
 number), there are effectively text messages sent by the telecom carrier or other entities (e.g. safety
 authorities) sent to this number which can be useful or important to know. 
@@ -208,19 +210,35 @@ Cookie: lang_redirect=en-US; ProductId=EW11; iottitle=EW11; stok="22D683012C6150
 
 ## Integration
 
-
-
 ### Features
 
-This integration exposes some of the features of this modem to Home Assistant. Most notably it provides:
+This integration exposes some of the features of the modem to Home Assistant. Most notably it provides:
 
  * **SMS sensor** - everytime the modem receives an SMS, the event with the SMS content and metadata can be used in Home Assistant;
+
+ ![SMS sensor](docs/images/zte_sms_sensor.png)
+
  * **SMS service** - allows SMS to be sent via the modem;
+
+ ![SMS service](docs/images/zte_send_sms.png)
+
  * **Modem status sensor** - provides realtime information regarding the modem operation and status;
+
+ ![Modem status sensor](docs/images/zte_status_sensor.png)
 
 ### Packages
 
 Check the requirements.txt file for the packages needed by this project.
+
+### Installation
+
+As with most custom components, the integration is installed by copying it into Home Assistant:
+
+ * clone this repo;
+ * copy the contents of the custom_components dir in this repo into /config/custom_components/ on the HASSIO instance;
+ * restart Home Assistant:
+ * configure the integration according to the sections below;
+ * restart Home Assistant again.
 
 ### Configure the integration:
 
@@ -258,8 +276,7 @@ sensors:
 
 ## TODO
 
- * add more entities for other modem features;
- * add service for sending SMS through the modem;
+ * add more entities for other modem features (e.g. reboot modem);
  * use async library for the http communication (aiohttp or aiohttp_requests);
  * understand and document the purpose of some of the modem API query parameters;
  * add validators to enforce distinction of configuration parameters, between different sensors.

@@ -13,7 +13,7 @@ SERVICE = "zte_send_sms"
 
 _LOGGER = logging.getLogger(__name__)
 
-def handle_request(call, connection):
+def handle_send_sms(call, connection):
     """
     Handle the zte_send_sms service call.
     """

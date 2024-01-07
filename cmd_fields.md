@@ -22,7 +22,6 @@ data_volume_limit_unit
 date_month
 dhcp_wan_status
 dial_mode
-disconnected
 draft_group_id
 EX_wifi_profile
 fota_idle
@@ -61,9 +60,7 @@ pbm_data
 pbm_init_flag
 pdn_type
 pin_status
-ppp_connected
 ppp_dial_conn_fail_counter
-ppp_disconnected
 pppoe_status
 ppp_status
 privacy_read_flag

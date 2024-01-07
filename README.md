@@ -279,7 +279,9 @@ sensors:
  * add more entities for other modem features (e.g. reboot modem);
  * use async library for the http communication (aiohttp or aiohttp_requests);
  * understand and document the purpose of some of the modem API query parameters;
- * add validators to enforce distinction of configuration parameters, between different sensors.
+ * add validators to enforce distinction of configuration parameters, between different sensors;
+ * add service to enable/disable the sensor polling (in order to use the web UI without spontaneous logout);
+ * add configuration parameter to zte_state_sensor for selecting the attribute to use as sensor state.
 
 ## References
 

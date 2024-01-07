@@ -283,7 +283,8 @@ sensors:
  * add modem SMS housekeeping (e.g delete old SMS) when sending new SMS;
  * add service to trigger SMS housekeeping;
  * add service to enable/disable the sensor pooling (useful to avoid getting kicked out of the web UI everytime HA logs in to poll the API).
- 
+ * add configuration parameter to zte_state_sensor for selecting the attribute to use as sensor state.
+
 
 ## References
 

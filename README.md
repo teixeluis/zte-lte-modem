@@ -279,7 +279,11 @@ sensors:
  * add more entities for other modem features (e.g. reboot modem);
  * use async library for the http communication (aiohttp or aiohttp_requests);
  * understand and document the purpose of some of the modem API query parameters;
- * add validators to enforce distinction of configuration parameters, between different sensors.
+ * add validators to enforce distinction of configuration parameters, between different sensors;
+ * add modem SMS housekeeping (e.g delete old SMS) when sending new SMS;
+ * add service to trigger SMS housekeeping;
+ * add service to enable/disable the sensor pooling (useful to avoid getting kicked out of the web UI everytime HA logs in to poll the API).
+ 
 
 ## References
 

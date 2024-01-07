@@ -57,14 +57,40 @@ def doCheckUser(connection):
     resp = connection.checkLoginStatus()
     print('zte_modem_util: doCheckUser: ', json.dumps(resp.json(), indent=4))
 
+def doSendQuery(connection):
+    isTest = True if input("Is Test (y/n)? \n") == "y" else False
+    multiData = input("Multidata (0,1): \n")
+    cmd = input("Cmd (fields): \n")
+
+    resp = connection.sendQueryCommand(isTest, multiData, cmd)
+    print('zte_modem_util: doSendQuery: ', json.dumps(resp.json(), indent=4))
+
 
 connection = ZteModemConnection('http', 'localhost', '8254', 'admin', getpass())
-
-connection.login()
 
 #doFetchSms(connection)
 #doGetAllSms(connection)
 #doGetModemStatus(connection, "cell_id,lte_rsrp,signalbar,wan_active_band,spn_name_data")
 #doCheckUser(connection)
+#doSendSms(connection)
 
-doSendSms(connection)
+while True:
+    print("Select Operation: \n\n")
+    print("1. Send Query")
+    print("2. List SMS")
+    print("3. Send SMS")
+    print("0. Exit")
+    print("\n")
+    operation = input("Operation? \n")
+
+    connection.manageSession()
+
+    if operation == "1":
+        doSendQuery(connection)
+    elif operation == "2":
+        doGetAllSms(connection)
+    elif operation == "3":
+        doSendSms(connection)
+    else:
+        print("Unknown option!")
+

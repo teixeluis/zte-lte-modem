@@ -63,9 +63,31 @@ class ZteModemConnection:
 
         return requests.post(self.url + ZTE_API_BASE + SET_CMD, data=params, headers=headers)
 
+    def sendQueryCommand(self, isTest, multiData, cmd):
+        """
+        sendQueryCommand sends a generic query command to the modem, expecting a json response with a result according to the provided fields, and attributes in the cmd field.
+
+        :isTest: test related field required by the modem.
+        :multiData: 
+        :cmd: the field containing the list of fields to be processed by the command.
+        """
+
+        headers = { "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }     
+        if multiData != None:
+            params = { "multi_data": multiData, "isTest": "true" if isTest else "false", "cmd": cmd }
+        else:
+            params = { "isTest": "true" if isTest else "false", "cmd": cmd }
+
+        return requests.get(self.url + ZTE_API_BASE + GET_CMD, params=params, headers=headers)
+
     def getModemStatus(self, attributeList):
-        headers = { "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }
-        #params = { "multi_data": "1", "isTest": "false", "sms_received_flag_flag": "0", "sts_received_flag_flag": "0", "cmd": "modem_main_state,pin_status,opms_wan_mode,opms_wan_auto_mode,loginfo,new_version_state,current_upgrade_state,is_mandatory,wifi_dfs_status,battery_value,ppp_dial_conn_fail_counter,signalbar,network_type,network_provider,opms_wan_auto_mode,dhcp_wan_status,ppp_status,EX_SSID1,sta_ip_status,EX_wifi_profile%,m_ssid_enable,RadioOff,wifi_onoff_state,wifi_chip1_ssid1_ssid,wifi_chip2_ssid1_ssid,simcard_roam,lan_ipaddr,station_mac,wifi_access_sta_num,battery_charging,battery_vol_percent,battery_pers,spn_name_data,spn_b1_flag,spn_b2_flag,realtime_tx_bytes,realtime_rx_bytes,realtime_time,realtime_tx_thrpt,realtime_rx_thrpt,monthly_rx_bytes,monthly_tx_bytes,monthly_time,date_month,data_volume_limit_switch,data_volume_limit_size,data_volume_alert_percent,data_volume_limit_unit,roam_setting_option,upg_roam_switch,cbns_server_enable,app_debug_mode,odu_mode,ssid,wifi_enable,wifi_5g_enable,check_web_conflict,dial_mode,ppp_dial_conn_fail_counter,wan_lte_ca,privacy_read_flag,is_night_mode,pppoe_status,dhcp_wan_status,static_wan_status,vpn_conn_status,rmcc,rmnc,sms_received_flag,sts_received_flag,sms_unread_num" }
+        """
+        getModemStatus returns the response containing the modem status information.
+
+        :attributeList: the attributes to be represented in the response. A complete attribute list as sent by the javascript client would be: "modem_main_state,pin_status,opms_wan_mode,opms_wan_auto_mode,loginfo,new_version_state,current_upgrade_state,is_mandatory,wifi_dfs_status,battery_value,ppp_dial_conn_fail_counter,signalbar,network_type,network_provider,opms_wan_auto_mode,dhcp_wan_status,ppp_status,EX_SSID1,sta_ip_status,EX_wifi_profile%,m_ssid_enable,RadioOff,wifi_onoff_state,wifi_chip1_ssid1_ssid,wifi_chip2_ssid1_ssid,simcard_roam,lan_ipaddr,station_mac,wifi_access_sta_num,battery_charging,battery_vol_percent,battery_pers,spn_name_data,spn_b1_flag,spn_b2_flag,realtime_tx_bytes,realtime_rx_bytes,realtime_time,realtime_tx_thrpt,realtime_rx_thrpt,monthly_rx_bytes,monthly_tx_bytes,monthly_time,date_month,data_volume_limit_switch,data_volume_limit_size,data_volume_alert_percent,data_volume_limit_unit,roam_setting_option,upg_roam_switch,cbns_server_enable,app_debug_mode,odu_mode,ssid,wifi_enable,wifi_5g_enable,check_web_conflict,dial_mode,ppp_dial_conn_fail_counter,wan_lte_ca,privacy_read_flag,is_night_mode,pppoe_status,dhcp_wan_status,static_wan_status,vpn_conn_status,rmcc,rmnc,sms_received_flag,sts_received_flag,sms_unread_num"
+        """ 
+
+        headers = { "Referer": self.url + "/index.html", "Host": self.host + ":" + self.port, "Accept": "application/json, text/javascript, */*; q=0.01", "Cookie": self.cookie }     
         params = { "multi_data": "1", "isTest": "false", "cmd": attributeList }
 
         return requests.get(self.url + ZTE_API_BASE + GET_CMD, params=params, headers=headers)

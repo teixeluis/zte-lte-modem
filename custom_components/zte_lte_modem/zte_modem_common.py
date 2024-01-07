@@ -281,7 +281,7 @@ class ZteModemConnection:
         loginStatus = self.checkLoginStatus()
 
         # If there isn't a valid session, try to login:
-        if loginStatus.json()['user'] == '':
+        if loginStatus.json()['user'] != self.username:
             self.login()
             loginStatus = self.checkLoginStatus()
 

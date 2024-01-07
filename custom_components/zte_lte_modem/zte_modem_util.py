@@ -91,6 +91,8 @@ while True:
         doGetAllSms(connection)
     elif operation == "3":
         doSendSms(connection)
+    elif operation == "0":
+        break
     else:
         print("Unknown option!")
 

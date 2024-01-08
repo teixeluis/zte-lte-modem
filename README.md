@@ -60,8 +60,8 @@ POST /goform/goform_set_cmd_process
 
 This endpoint is used to execute actions on the modem and it accepts at least the following form data parameters (URL encoded parameters sent in the request body):
 
- * `isTest` - always sent with value set to false. Not sure what is the effect of true;
- * `goformId` - the action to execute. Some of the actions are:
+ * `isTest` - normally sent with false. Doesn't seem to make any difference with the queries;
+ * `goformId` - the action to execute. Some of the actions are ([here](./goformId_commands.md) you can find more actions):
    * `LOGIN_MULTI_USER` - used to authenticate with the modem
    * `LOGOUT` - logout and invalidate the session cookie
    * `SET_MSG_READ` - mark a given SMS as read
@@ -278,12 +278,14 @@ sensors:
 
  * add more entities for other modem features (e.g. reboot modem);
  * use async library for the http communication (aiohttp or aiohttp_requests);
- * understand and document the purpose of some of the modem API query parameters;
+ * understand and document the purpose of more of the modem API parameters;
  * add validators to enforce distinction of configuration parameters, between different sensors;
  * add modem SMS housekeeping (e.g delete old SMS) when sending new SMS;
  * add service to trigger SMS housekeeping;
  * add service to enable/disable the sensor pooling (useful to avoid getting kicked out of the web UI everytime HA logs in to poll the API).
- * add configuration parameter to zte_state_sensor for selecting the attribute to use as sensor state.
+ * add configuration parameter to zte_state_sensor for selecting the attribute to use as sensor state;
+ * make the project compatible with HACS;
+ * add a configuration flow;
 
 
 ## References

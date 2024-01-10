@@ -1,11 +1,14 @@
 import datetime
 import logging
 
-from .zte_modem_common import ZteModemException
+from .zte_modem_common import ZteModemException, ServiceException
 
 from .const import (
     ATTR_SMS_TO,
     ATTR_SMS_PAYLOAD,
+    SENSOR_STATE_RUNNING,
+    SENSOR_STATE_PAUSED,
+    ATTR_SENSORS_STATE,
 )
 
 DOMAIN = "zte_lte_modem"
@@ -22,14 +25,23 @@ def handle_send_sms(call, connection):
     sms_payload = call.data.get(ATTR_SMS_PAYLOAD)
     date = datetime.datetime.now()
 
-    #hass.states.set(DOMAIN + "." + SERVICE, sms_to, sms_payload)
-
     #connection.manageSession()
     connection.login()
 
     resp = connection.sendSms(sms_to, date, sms_payload)
 
     if resp.json()['result'] == 'success':
-        _LOGGER.debug('zte_modem_util: doSendSms: SMS successfully sent.')
+        _LOGGER.debug('handle_send_sms: SMS successfully sent.')
     else:
-        raise ZteModemException('zte_modem_util: doSendSms: failed to send sms: ', resp.json()['result'])
+        raise ZteModemException('handle_send_sms: failed to send sms: ', resp.json()['result'])
+
+def handle_sensors_state_control(call, hass):
+    """
+    Handle the sensor state control service call.
+    """
+    sensors_state = call.data.get(ATTR_SENSORS_STATE)
+
+    if sensors_state != SENSOR_STATE_RUNNING or sensors_state != SENSOR_STATE_PAUSED:
+        raise ServiceException("handle_sensors_state_control: unknown state value: ", sensors_state)
+    
+    hass.data[DOMAIN]["sensors_state"] = call.data.get(ATTR_SENSORS_STATE)

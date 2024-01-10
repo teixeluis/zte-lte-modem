@@ -10,3 +10,11 @@ zte_send_sms:
       advanced: false
       example: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
       default: ""
+
+zte_sensors_state_control:
+  fields:
+    sensors_state:
+      required: true
+      advanced: false
+      example: "sensor_state_running"
+      default: "sensor_state_running"

@@ -293,6 +293,9 @@ class ZteModemConnection:
 class ZteModemException(Exception):
     """Raise for my specific kind of exception"""
 
+class ServiceException(Exception):
+    """Raise for my specific kind of exception"""
+
 # Utility operations:
 
 def calculatePasswordHash(password, ld):

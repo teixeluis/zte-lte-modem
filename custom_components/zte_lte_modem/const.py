@@ -9,7 +9,11 @@ ATTR_SMS_CONCAT_SMS_TOTAL = "sms_concat_sms_total"
 ATTR_SMS_CONCAT_SMS_RCVD = "sms_concat_sms_rcvd"
 ATTR_SMS_CLASS = "sms_class"
 ATTR_SMS_PAYLOAD = "sms_payload"
+ATTR_SENSORS_STATE = "sensors_state"
 
 CONF_ATTRIB_LIST = "enabled_attributes"
 
 MODEM_STATE_ATTR = "modem_main_state"
+
+SENSOR_STATE_RUNNING = "sensor_state_running"
+SENSOR_STATE_PAUSED = "sensor_state_paused"

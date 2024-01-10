@@ -108,7 +108,7 @@ define([
         d();
         var g = ["phonebook/phonebook", "sms/smslist"],
           _ = -1 != n.inArray(u[0].path, g);
-        !0 === u[0].checkSIMStatus || _
+        !0 === u[0].checkSIMStatus || _HAS_LOGIN
           ? void 0 == s.simStatus
             ? (showLoading("waiting"), i())
             : c(u[0], s.simStatus, _)

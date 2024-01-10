@@ -23,12 +23,13 @@ from .const import (
     ATTR_SMS_CONCAT_SMS_RCVD,
     ATTR_SMS_CLASS,
     CONF_ATTRIB_LIST,
-    MODEM_STATE_ATTR
+    MODEM_STATE_ATTR,
+    SENSOR_STATE_RUNNING,
 )
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.typing import ConfigType
 
 from . import DOMAIN
 
@@ -39,20 +40,17 @@ SCAN_INTERVAL = timedelta(seconds=15)
 def setup_platform(
     hass: HomeAssistant,
     config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info=None):
-
-    #if discovery_info is None:
-    #   return
+    add_entities: AddEntitiesCallback):
     
     connection = hass.data[DOMAIN]["connection"]
+    sensors_state = hass.data[DOMAIN]["sensors_state"]
 
     sms_sensor_name = config.get(CONF_NAME, "zte_sms_sensor")
-    sms_sensor = SmsSensor(sms_sensor_name, connection)
+    sms_sensor = SmsSensor(sms_sensor_name, connection, sensors_state)
 
     status_sensor_name = config.get(CONF_NAME, "zte_status_sensor")
     status_sensor_attributes = config.get(CONF_ATTRIB_LIST, "cell_id,lte_rsrp,signalbar,wan_active_band,spn_name_data")
-    status_sensor = StatusSensor(status_sensor_name, status_sensor_attributes, connection)
+    status_sensor = StatusSensor(status_sensor_name, status_sensor_attributes, connection, sensors_state)
 
     add_entities([sms_sensor, status_sensor])
 
@@ -64,7 +62,7 @@ class SmsSensor(SensorEntity):
     Besides the SMS payload (which populates the sensor state), the SMS metadata maps to the HA sensor state attributes,
     providing detailed information on each received SMS.
     """
-    def __init__(self, name, connection):
+    def __init__(self, name, connection, sensors_state):
         super().__init__()
         self.attrs: Dict[str, Any] = {}
         self._name = name
@@ -72,6 +70,7 @@ class SmsSensor(SensorEntity):
         self._state = None
         self._available = True
         self.connection = connection
+        self.sensors_state = sensors_state
 
     @property
     def name(self) -> str:
@@ -100,6 +99,11 @@ class SmsSensor(SensorEntity):
         """Fetch new state data from the modem API for the sensor.
 
         """
+
+        # Don't do anything if the sensors are disabled:
+        if not self.sensors_state == SENSOR_STATE_RUNNING:
+            return
+        
         try:
             self.connection.manageSession()
 
@@ -138,7 +142,7 @@ class StatusSensor(SensorEntity):
     which are then passed to the modem API as field selectors.
     
     """
-    def __init__(self, name, status_sensor_attributes, connection):
+    def __init__(self, name, status_sensor_attributes, connection, sensors_state):
         super().__init__()
         self.attrs: Dict[str, Any] = {}
         self._name = name
@@ -147,6 +151,7 @@ class StatusSensor(SensorEntity):
         self._available = True
         self.status_sensor_attributes = status_sensor_attributes
         self.connection = connection
+        self.sensors_state = sensors_state
 
     @property
     def name(self) -> str:
@@ -175,6 +180,11 @@ class StatusSensor(SensorEntity):
         """Fetch new state data from the modem API for the sensor.
 
         """
+
+        # Don't do anything if the sensors are disabled:
+        if not self.sensors_state == SENSOR_STATE_RUNNING:
+            return
+        
         try:
             self.connection.manageSession()
 
